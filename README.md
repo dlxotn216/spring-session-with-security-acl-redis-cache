@@ -1,4 +1,4 @@
-# Spring- ession with security ACL Redis Cache
+# Spring Session with security ACL Redis Cache
 Spring Session과 Spring Security ACL (Redis Cache) 설정을 진행할 때 발생하는 이슈 등 정리
 
 ## Cloud 환경 이관
