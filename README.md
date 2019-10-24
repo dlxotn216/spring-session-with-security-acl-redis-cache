@@ -53,6 +53,8 @@ web.xml
 - docker run -d -p 6379:6379 redis
 - docker run -d -p 7777:7777 redis --port 7777
 
+(redis-cli: docker run -it --link ${containerNames}:redis --rm redis redis-cli -h redis -p 6379) . 
+
 여기서 -p {in:out)은 host의 in port를 container의 out port로 연결하는 옵션이다.  
 -d는 Daemon으로 띄우는 설정이다.  
 
