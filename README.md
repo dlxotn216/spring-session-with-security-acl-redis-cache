@@ -93,18 +93,20 @@ web.xml
 ```
 
 JBoss를 띄워보면 아래와 같은 메시지를 띄우고 뻗어버린다.  
-14:50:49,127 JBWEB000287: Exception sending context initialized event to listener instance of class org.springframework.web.context.ContextLoaderListener  
-14:50:49,164 JBWEB001103: Error detected during context  start, will stop it  
-14:50:49,182 Closing Spring root WebApplicationContext  
-14:50:49,186 MSC000001: Failed to start service jboss.web.deployment.default-host./  
-...  
-[2019-10-24 02:50:49,290] Artifact ctms:war exploded: Error during artifact deployment. See server log for details.  
+> 14:50:49,127 JBWEB000287: Exception sending context initialized event to listener instance of class  
+> org.springframework.web.context.ContextLoaderListener  
+> 14:50:49,164 JBWEB001103: Error detected during context  start, will stop it  
+> 14:50:49,182 Closing Spring root WebApplicationContext  
+> 14:50:49,186 MSC000001: Failed to start service jboss.web.deployment.default-host./  
+> ...  
+> [2019-10-24 02:50:49,290] Artifact ctms:war exploded: Error during artifact deployment. See server log for details.  
 
 정확한 판단을 위해 server.log를 확인하였고 아래와 같은 로그를 확인할 수 있었다.  
 
-Caused by: org.springframework.beans.factory.NoUniqueBeanDefinitionException: No qualifying bean of type [org.springframework.data.redis.connection.RedisConnectionFactory]  
-is defined: expected single matching bean but found 2: lettuceConnectionFactory,cacheLettuceConnectionFactory  
-at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:970) [spring-beans-4.0.4.RELEASE.jar:4.0.4.RELEASE]  
+> Caused by: org.springframework.beans.factory.NoUniqueBeanDefinitionException: No qualifying bean of type  
+> [org.springframework.data.redis.connection.RedisConnectionFactory]  
+> is defined: expected single matching bean but found 2: lettuceConnectionFactory,cacheLettuceConnectionFactory at   
+> org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:)  
 
 RedisConnectionFactory 타입의 Bean이 두개가 있어 qualifying이 필요한 상황이었다.  
 
@@ -112,11 +114,11 @@ LettuceConnectionFactory는 어쩔 수 업이 두개가 필요하므로 qualifyi
 현재 필요한 것은 어떤 Bean이 RedisConnectionFactory에 대한 의존성 주입을 필요로 하는 것이다. 그래야 Bean name을 설정해주어 qualifying 할수 있을테니...  
 
 로그를 조금 더 찾아보니 아래와 같은 것을 찾을 수 있었다.  
-14:50:49,117 ERROR [org.springframework.web.context.ContextLoader] (ServerService Thread Pool -- 5) Context initialization failed:  
-org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'redisMessageListenerContainer'  
-defined in class path resource [org/springframework/session/data/redis/config/annotation/web/http/RedisHttpSessionConfiguration.class]:  
-Unsatisfied dependency expressed through constructor argument with index 0 of type   
-[org.springframework.data.redis.connection.RedisConnectionFactory]  
+> 14:50:49,117 ERROR [org.springframework.web.context.ContextLoader] (ServerService Thread Pool -- 5) Context initialization failed:  
+> org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'redisMessageListenerContainer'  
+> defined in class path resource [org/springframework/session/data/redis/config/annotation/web/http/RedisHttpSessionConfiguration.class]:  
+> Unsatisfied dependency expressed through constructor argument with index 0 of type   
+> [org.springframework.data.redis.connection.RedisConnectionFactory]  
 
 조금 전 Spring Session의 설정을 진행하면서 등록 한 RedisHttpSessionConfiguration Bean 안에서 생성되는 redisMessageListenerContainer Bean의 생성자 0번째 타입으로  
 RedisConnectionFactory를 주입 받도록 되어있으며, 현재 설정에선 RedisConnectionFactory가 두 개 발견되어 어떤 것을 주입해주어야 하는지  
@@ -174,7 +176,17 @@ Qualifying 할 수 있는 Bean의 이름은 파라미터 이름, 변수명이다
 ```
 
 아래와 같이 정상적으로 서비스가 시작 된 것을 볼 수 있다.  
-[2019-10-24 03:02:43,051] Artifact ctms:war exploded: Deploy took 9,364 milliseconds
+> [2019-10-24 03:02:43,051] Artifact ctms:war exploded: Deploy took 9,364 milliseconds
+
+
+## 정리
+이전에 진행했던 내용들을 잘 기록해두어 생각보다 마이그레이션에 대한 작업이 빨리 진행 될 수 있었던 것 같다.  
+추가적인 설정이 필요했고 그에 따라 추가적인 이슈가 나타났지만 그에대한 것들도 지금처럼 또 다시 정리 하는 습관을 계속 들여야 할 것 같다.  
+
+사실 다른 프로젝트를 진행하면서 새로운 기술을 사용함에 따라서 발생하고 해결한 이슈들이 많았는데  
+귀찮아서 바빠서 몇몇 놓친 내용들이 많았다.  
+언젠간 도움이 될 테니 시간을 내어 하나하나 복기해서 기록해보려고 한다.
+
 
 
 
